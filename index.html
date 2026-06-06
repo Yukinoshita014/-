@@ -325,7 +325,7 @@
 </main>
 
 <!-- Hidden audio player -->
-<audio id="bgm" preload="auto" loop>
+<audio id="bgm" preload="auto" loop playsinline>
   <source src="bgm.mp3" type="audio/mpeg">
 </audio>
 
@@ -354,29 +354,27 @@
   const musicFrame = document.getElementById('music-frame');
   const bgm = document.getElementById('bgm');
   let musicPlaying = false;
-  let musicStarted = false;
 
-  function playMusic() {
-    if (musicStarted) return;
+  function tryPlay() {
+    if (musicPlaying) return;
     bgm.play().then(() => {
       musicPlaying = true;
-      musicStarted = true;
       musicBtn.classList.add('playing');
       musicBtn.textContent = '♪';
       musicFrame.style.display = 'block';
     }).catch(() => {});
   }
 
-  // Attempt autoplay immediately (works on desktop)
-  playMusic();
+  // Attempt immediately (desktop)
+  bgm.load();
+  tryPlay();
 
-  // On mobile: start playing on first user interaction
-  const events = ['click', 'touchstart', 'scroll', 'keydown'];
-  events.forEach(evt => {
-    document.addEventListener(evt, playMusic, { once: true, passive: true });
+  // On mobile: any user interaction triggers play
+  ['click', 'touchstart', 'scroll'].forEach(evt => {
+    document.addEventListener(evt, tryPlay, { once: true, passive: true });
   });
 
-  // Toggle button: pause/resume
+  // Toggle button: pause / resume
   musicBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (musicPlaying) {
@@ -386,26 +384,9 @@
       musicBtn.textContent = '♫';
       musicFrame.style.display = 'none';
     } else {
-      bgm.play().then(() => {
-        musicPlaying = true;
-        musicStarted = true;
-        musicBtn.classList.add('playing');
-        musicBtn.textContent = '♪';
-        musicFrame.style.display = 'block';
-      }).catch(() => {});
+      tryPlay();
     }
   });
-
-  // Sync state with audio element events
-  bgm.addEventListener('play', () => {
-    musicPlaying = true; musicStarted = true;
-    musicBtn.classList.add('playing'); musicBtn.textContent = '♪';
-    musicFrame.style.display = 'block';
-  });
-  bgm.addEventListener('pause', () => {
-    musicPlaying = false;
-    musicBtn.classList.remove('playing'); musicBtn.textContent = '♫';
-    musicFrame.style.display = 'none';
     }
   });
 

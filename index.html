@@ -349,13 +349,36 @@
     setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1200);
   });
 
-  // ── Music Toggle (local FLAC: 寻 — 光与夜之恋) ──
+  // ── Music: auto-play on first interaction ──
   const musicBtn = document.getElementById('music-toggle');
   const musicFrame = document.getElementById('music-frame');
   const bgm = document.getElementById('bgm');
   let musicPlaying = false;
+  let musicStarted = false;
 
-  musicBtn.addEventListener('click', () => {
+  function playMusic() {
+    if (musicStarted) return;
+    bgm.play().then(() => {
+      musicPlaying = true;
+      musicStarted = true;
+      musicBtn.classList.add('playing');
+      musicBtn.textContent = '♪';
+      musicFrame.style.display = 'block';
+    }).catch(() => {});
+  }
+
+  // Attempt autoplay immediately (works on desktop)
+  playMusic();
+
+  // On mobile: start playing on first user interaction
+  const events = ['click', 'touchstart', 'scroll', 'keydown'];
+  events.forEach(evt => {
+    document.addEventListener(evt, playMusic, { once: true, passive: true });
+  });
+
+  // Toggle button: pause/resume
+  musicBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (musicPlaying) {
       bgm.pause();
       musicPlaying = false;
@@ -365,35 +388,24 @@
     } else {
       bgm.play().then(() => {
         musicPlaying = true;
+        musicStarted = true;
         musicBtn.classList.add('playing');
         musicBtn.textContent = '♪';
         musicFrame.style.display = 'block';
-      }).catch((err) => {
-        console.warn('Autoplay blocked, user may need to interact with page first:', err);
-        // Still show feedback — browser may need a second tap
-        musicPlaying = true;
-        musicBtn.classList.add('playing');
-        musicBtn.textContent = '♪';
-        musicFrame.style.display = 'block';
-      });
+      }).catch(() => {});
     }
   });
 
-  // Pause when music bar is clicked (directly on audio)
+  // Sync state with audio element events
   bgm.addEventListener('play', () => {
-    if (!musicPlaying) {
-      musicPlaying = true;
-      musicBtn.classList.add('playing');
-      musicBtn.textContent = '♪';
-      musicFrame.style.display = 'block';
-    }
+    musicPlaying = true; musicStarted = true;
+    musicBtn.classList.add('playing'); musicBtn.textContent = '♪';
+    musicFrame.style.display = 'block';
   });
   bgm.addEventListener('pause', () => {
-    if (musicPlaying) {
-      musicPlaying = false;
-      musicBtn.classList.remove('playing');
-      musicBtn.textContent = '♫';
-      musicFrame.style.display = 'none';
+    musicPlaying = false;
+    musicBtn.classList.remove('playing'); musicBtn.textContent = '♫';
+    musicFrame.style.display = 'none';
     }
   });
 

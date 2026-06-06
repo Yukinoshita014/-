@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>致即将拥抱阳光的你</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --night-deep: #0a0a14;
+    --night-purple: #1a1028;
+    --rose: #c41e3a;
+    --rose-dark: #8b1530;
+    --gold: #d4a574;
+    --gold-light: #e8d5b7;
+    --starlight: #f0e6d8;
+    --dawn-blue: #2c3e6b;
+    --sunshine: #f4c856;
+    --warm-white: #fdf6ee;
+    --text-dark: #2c1810;
+    --text-muted: #6b5e53;
+  }
+
+  body {
+    font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+    background: var(--night-deep);
+    color: var(--starlight);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Canvas ── */
+  #starfield {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events: none; z-index:0;
+  }
+
+  /* ── Loading ── */
+  #loading {
+    position: fixed; inset:0; z-index:9999;
+    background: var(--night-deep);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #loading.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+  .loader-ring {
+    width:48px; height:48px; border:2px solid rgba(212,165,116,0.2);
+    border-top-color: var(--gold); border-radius:50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  .loader-text { color: var(--gold-light); font-size: 0.9rem; letter-spacing: 0.2em; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── Music Toggle ── */
+  #music-toggle {
+    position: fixed; top:20px; right:20px; z-index:100;
+    width:40px; height:40px; border-radius:50%; border:1px solid rgba(212,165,116,0.4);
+    background: rgba(10,10,20,0.6); backdrop-filter: blur(10px);
+    color: var(--gold); cursor:pointer; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    transition: all 0.3s;
+  }
+  #music-toggle:hover { border-color: var(--gold); }
+  #music-toggle.playing { border-color: var(--gold); box-shadow: 0 0 16px rgba(212,165,116,0.3); }
+
+  /* ── Main Container ── */
+  main { position:relative; z-index:1; }
+
+  section {
+    min-height: 100vh; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding: 40px 24px; position:relative;
+  }
+
+  /* ── Section 0: Hero ── */
+  #hero {
+    text-align: center;
+  }
+  .hero-kv {
+    font-family: 'Cormorant Garamond', 'Noto Serif SC', serif;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 600; letter-spacing: 0.06em;
+    background: linear-gradient(180deg, #e8d5b7 0%, #d4a574 40%, #8b6914 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 64px;
+    line-height: 1.3;
+  }
+  .hero-sub {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: var(--gold-light); letter-spacing: 0.15em;
+    opacity: 0.85; margin-bottom: 16px;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 32px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    animation: float 2.5s ease-in-out infinite;
+  }
+  .scroll-hint span { font-size:0.75rem; color: var(--text-muted); letter-spacing:0.1em; }
+  .scroll-line { width:1px; height:32px; background: linear-gradient(transparent, var(--gold), transparent); }
+  @keyframes float {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(8px); }
+  }
+
+  /* ── Section 1: Night / Struggle ── */
+  #night { text-align:center; }
+  .section-tag {
+    font-size:0.8rem; letter-spacing:0.25em; color:var(--rose);
+    margin-bottom: 24px; text-transform:uppercase;
+  }
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 600; color: var(--starlight);
+    margin-bottom: 20px; letter-spacing:0.06em; line-height:1.4;
+  }
+  .section-body {
+    max-width: 480px; font-size:1rem; line-height:2;
+    color: var(--gold-light); opacity:0.85;
+  }
+  .section-body em { font-style:normal; color:var(--rose); }
+  .rose-divider {
+    margin: 32px auto; display:flex; align-items:center; gap:12px;
+    opacity:0.5;
+  }
+  .rose-divider::before, .rose-divider::after {
+    content:''; width:36px; height:1px; background:var(--rose);
+  }
+  .rose-divider svg { width:16px; height:16px; fill:var(--rose); }
+
+  /* ── Section 2: Dawn / Transition ── */
+  #dawn { text-align:center; background: linear-gradient(180deg, var(--night-deep) 0%, var(--dawn-blue) 60%, rgba(244,200,86,0.15) 100%); }
+  #dawn .section-title { color: var(--sunshine); }
+  #dawn .section-body { color: var(--warm-white); }
+
+  .character-cards {
+    display:flex; flex-wrap:wrap; gap:16px; justify-content:center;
+    margin-top: 36px; max-width: 600px;
+  }
+  .char-card {
+    flex:1 1 140px; max-width:180px;
+    padding: 20px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.04); border:1px solid rgba(232,213,183,0.12);
+    backdrop-filter: blur(8px); text-align:center;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: default;
+  }
+  .char-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212,165,116,0.4);
+    box-shadow: 0 8px 32px rgba(212,165,116,0.08);
+  }
+  .char-card .icon { font-size:2rem; margin-bottom:10px; }
+  .char-card .name { font-size:0.85rem; font-weight:600; color:var(--gold); letter-spacing:0.05em; margin-bottom:6px; }
+  .char-card .msg { font-size:0.75rem; color:var(--gold-light); opacity:0.7; line-height:1.6; }
+
+  /* ── Section 3: Sunshine / Blessing ── */
+  #sunshine { text-align:center; background: linear-gradient(180deg, rgba(244,200,86,0.12) 0%, var(--warm-white) 30%, #fef5e7 100%); }
+  #sunshine .section-tag { color: var(--gold); }
+  #sunshine .section-title { color: var(--text-dark); }
+  #sunshine .section-body { color: var(--text-muted); }
+  #sunshine .section-body strong { color: var(--text-dark); }
+
+  .blessing-quote {
+    margin: 36px auto; max-width: 440px;
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+    line-height: 2.2; color: var(--text-dark);
+    font-weight: 300; letter-spacing:0.04em;
+  }
+  .blessing-quote .highlight {
+    font-weight: 600;
+    background: linear-gradient(120deg, var(--rose) 0%, #d4845a 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .ip-reference {
+    display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+    margin-top: 28px; max-width: 500px;
+  }
+  .ip-pill {
+    padding: 8px 18px; border-radius: 20px;
+    font-size:0.78rem; letter-spacing:0.04em;
+    border:1px solid rgba(196,30,58,0.2);
+    color: var(--rose-dark); background: rgba(255,255,255,0.5);
+  }
+
+  /* ── Footer ── */
+  #footer {
+    min-height: auto; padding: 48px 24px 60px;
+    text-align: center; background: #fef5e7;
+  }
+  .signature {
+    font-size:1.1rem; font-weight:600; color:var(--text-dark);
+    letter-spacing:0.06em; margin-bottom:8px;
+  }
+  .footer-cheer {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 700; color: var(--text-dark);
+    letter-spacing: 0.08em; margin-bottom: 24px;
+  }
+  .footer-rose {
+    margin: 20px auto 24px; opacity:0.3;
+  }
+
+  /* ── Rose Petal ── */
+  .petal {
+    position:fixed; z-index:2; pointer-events:none;
+    width:12px; height:16px; background: radial-gradient(ellipse at 30% 30%, #d4847a, #8b1530);
+    border-radius: 50% 0 50% 0;
+    opacity:0; animation: petalFall linear forwards;
+  }
+  @keyframes petalFall {
+    0% { opacity:0; transform: translate(0, -20px) rotate(0deg) scale(0.6); }
+    10% { opacity:0.7; }
+    80% { opacity:0.3; }
+    100% { opacity:0; transform: translate(var(--dx), 100vh) rotate(var(--rot)) scale(1); }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    section { padding: 32px 18px; }
+    .section-body { font-size:0.92rem; line-height:1.9; }
+    .character-cards { gap:10px; }
+    .char-card { flex:1 1 100px; padding:14px 10px; }
+    .char-card .icon { font-size:1.5rem; }
+  }
+
+  @media (min-width: 768px) {
+    .section-body { max-width: 560px; font-size:1.05rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="loader-ring"></div>
+  <p class="loader-text">星光正在铺路...</p>
+</div>
+
+<!-- Music Toggle -->
+<button id="music-toggle" title="音乐" aria-label="播放/暂停音乐">♫</button>
+
+<!-- Starfield Canvas -->
+<canvas id="starfield"></canvas>
+
+<main>
+  <!-- Hero -->
+  <section id="hero">
+    <p class="hero-kv">From Night to Light</p>
+    <p class="hero-sub">致最好的胡佳欣</p>
+    <div class="scroll-hint">
+      <span>向下翻阅</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Section 1: Night -->
+  <section id="night">
+    <p class="section-tag">✦ 暗夜篇 ✦</p>
+    <h2 class="section-title">所有的深夜刷题<br>都是在为自己点亮星火</h2>
+    <div class="rose-divider">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.5.3 3 1 4.5C5 20 8 22 12 22s7-2 9-5.5c.7-1.5 1-3 1-4.5 0-5.5-4.5-10-10-10zM12 4c.8 0 1.6.1 2.4.4-1.4.5-2.6 1.4-3.4 2.6-.8-1.2-2-2.1-3.4-2.6C10.4 4.1 11.2 4 12 4z"/></svg>
+    </div>
+    <p class="section-body">
+      我知道，这一路走来不容易。<br>
+      那些深夜亮着的台灯、堆在桌角的卷子、<br>
+      写到没水的笔芯——<br>
+      每一件都是你为自己铺的路。<br><br>
+      <em>「在黑暗中独自行走的勇气，<br>比任何光芒都更值得铭记。」</em>
+    </p>
+  </section>
+
+  <!-- Section 2: Dawn -->
+  <section id="dawn">
+    <p class="section-tag">✦ 破晓篇 ✦</p>
+    <h2 class="section-title">光即将照进来</h2>
+    <p class="section-body" style="max-width:480px;">
+      还记得吗？你喜欢的那些故事里——<br>
+      主人公总是在最深的黑夜之后，<br>
+      迎来属于自己的晨光。
+    </p>
+    <div class="character-cards">
+      <div class="char-card">
+        <div class="icon">🌙</div>
+        <div class="name">光与夜</div>
+        <div class="msg">你也是被光选中的人<br>即将奔赴自己的舞台</div>
+      </div>
+      <div class="char-card">
+        <div class="icon">☀️</div>
+        <div class="name">拥抱阳光</div>
+        <div class="msg">所有的努力都会开花<br>在六月重新拥抱阳光</div>
+      </div>
+      <div class="char-card">
+        <div class="icon">🌹</div>
+        <div class="name">暗夜蔷薇</div>
+        <div class="msg">荆棘里开出的花<br>比温室里的更美</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Sunshine -->
+  <section id="sunshine">
+    <p class="section-tag">✦ 晨光篇 ✦</p>
+    <h2 class="section-title">你会成为自己的太阳</h2>
+    <div class="blessing-quote">
+      <p>高中四年，你走过的每一步<br>都算数。</p>
+      <p style="margin-top:16px;">考场上的你——<br>不是一个人在战斗，<br>是所有挑灯夜战的夜晚<br>在替你作答。</p>
+      <p style="margin-top:20px;">
+        <span class="highlight">愿你落笔生花，</span><br>
+        <span class="highlight">愿你光芒万丈。</span>
+      </p>
+    </div>
+    <p class="footer-cheer" style="margin-top:48px;">高考加油！</p>
+  </section>
+
+  <!-- Footer -->
+  <section id="footer">
+    <p class="signature">—— 你的高中同学</p>
+  </section>
+</main>
+
+<!-- Hidden audio player -->
+<audio id="bgm" preload="auto" loop>
+  <source src="bgm.flac" type="audio/flac">
+</audio>
+
+<!-- Music Frame (visual feedback) -->
+<div id="music-frame" style="position:fixed;bottom:0;left:0;width:100%;z-index:99;display:none;pointer-events:none;">
+  <div style="max-width:400px;margin:0 auto;padding:12px 24px;text-align:center;
+    background:rgba(10,10,20,0.75);backdrop-filter:blur(12px);border-radius:20px 20px 0 0;
+    border-top:1px solid rgba(212,165,116,0.25);">
+    <p style="font-size:0.75rem;color:var(--gold-light);letter-spacing:0.08em;margin:0;">
+      ♪ 寻 —— 光与夜之恋
+    </p>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Loading ──
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1200);
+  });
+
+  // ── Music Toggle (local FLAC: 寻 — 光与夜之恋) ──
+  const musicBtn = document.getElementById('music-toggle');
+  const musicFrame = document.getElementById('music-frame');
+  const bgm = document.getElementById('bgm');
+  let musicPlaying = false;
+
+  musicBtn.addEventListener('click', () => {
+    if (musicPlaying) {
+      bgm.pause();
+      musicPlaying = false;
+      musicBtn.classList.remove('playing');
+      musicBtn.textContent = '♫';
+      musicFrame.style.display = 'none';
+    } else {
+      bgm.play().then(() => {
+        musicPlaying = true;
+        musicBtn.classList.add('playing');
+        musicBtn.textContent = '♪';
+        musicFrame.style.display = 'block';
+      }).catch((err) => {
+        console.warn('Autoplay blocked, user may need to interact with page first:', err);
+        // Still show feedback — browser may need a second tap
+        musicPlaying = true;
+        musicBtn.classList.add('playing');
+        musicBtn.textContent = '♪';
+        musicFrame.style.display = 'block';
+      });
+    }
+  });
+
+  // Pause when music bar is clicked (directly on audio)
+  bgm.addEventListener('play', () => {
+    if (!musicPlaying) {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+      musicBtn.textContent = '♪';
+      musicFrame.style.display = 'block';
+    }
+  });
+  bgm.addEventListener('pause', () => {
+    if (musicPlaying) {
+      musicPlaying = false;
+      musicBtn.classList.remove('playing');
+      musicBtn.textContent = '♫';
+      musicFrame.style.display = 'none';
+    }
+  });
+
+  // ── Starfield Canvas ──
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initStars();
+  }
+
+  function initStars() {
+    const count = Math.floor(W * H / 1800);
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.6 + 0.3,
+      twinkleSpeed: Math.random() * 0.015 + 0.005,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      baseAlpha: Math.random() * 0.5 + 0.35,
+      driftX: (Math.random() - 0.5) * 0.15,
+      driftY: (Math.random() - 0.5) * 0.08
+    }));
+  }
+
+  let scrollPercent = 0;
+  let targetScrollPercent = 0;
+
+  function updateScroll() {
+    const scrollTop = window.pageYOffset;
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    targetScrollPercent = docH > 0 ? scrollTop / docH : 0;
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, W, H);
+    const t = performance.now() * 0.001;
+    // Smooth follow
+    scrollPercent += (targetScrollPercent - scrollPercent) * 0.05;
+    const brightness = 1 + scrollPercent * 1.5; // stars get brighter as you scroll
+
+    for (const s of stars) {
+      const alpha = (Math.sin(t * s.twinkleSpeed * 60 + s.twinkleOffset) * 0.3 + 0.7) * s.baseAlpha * brightness;
+      const clampedAlpha = Math.min(1, Math.max(0.05, alpha));
+
+      // Draw star with glow
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(232,213,183,${clampedAlpha})`;
+      ctx.fill();
+
+      // Glow halo for brighter stars
+      if (s.r > 1.2 && clampedAlpha > 0.5) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232,213,183,${clampedAlpha * 0.12})`;
+        ctx.fill();
+      }
+
+      // Subtle drift
+      s.x += s.driftX;
+      s.y += s.driftY;
+      if (s.x < 0) s.x = W;
+      if (s.x > W) s.x = 0;
+      if (s.y < 0) s.y = H;
+      if (s.y > H) s.y = 0;
+    }
+
+    // Warm glow at bottom as you scroll
+    if (scrollPercent > 0.4) {
+      const glowAlpha = (scrollPercent - 0.4) * 0.25;
+      const grd = ctx.createLinearGradient(0, H * 0.4, 0, H);
+      grd.addColorStop(0, 'transparent');
+      grd.addColorStop(0.5, `rgba(244,200,86,${glowAlpha * 0.5})`);
+      grd.addColorStop(1, `rgba(244,200,86,${glowAlpha})`);
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    requestAnimationFrame(drawStars);
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('scroll', updateScroll, { passive: true });
+  resize();
+  updateScroll();
+  requestAnimationFrame(drawStars);
+
+  // ── Rose Petals ──
+  function spawnPetal() {
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+    const startX = Math.random() * window.innerWidth;
+    const size = Math.random() * 8 + 8;
+    petal.style.cssText = `
+      left:${startX}px; top:-20px;
+      width:${size}px; height:${size * 1.4}px;
+      --dx:${(Math.random() - 0.5) * 180}px;
+      --rot:${Math.random() * 540 - 270}deg;
+      animation-duration:${Math.random() * 6 + 8}s;
+      animation-delay:0s;
+    `;
+    document.body.appendChild(petal);
+    petal.addEventListener('animationend', () => petal.remove());
+  }
+
+  // Spawn petals at intervals, more frequent during dawn section
+  let petalInterval = 4000;
+  function schedulePetal() {
+    spawnPetal();
+    petalInterval = 3000 + Math.random() * 5000;
+    setTimeout(schedulePetal, petalInterval);
+  }
+  setTimeout(schedulePetal, 3000);
+
+  // ── Scroll-triggered section reveals ──
+  const observerOptions = { threshold: 0.3 };
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    }
+  }, observerOptions);
+
+  document.querySelectorAll('section').forEach(sec => {
+    sec.style.opacity = '0';
+    sec.style.transform = 'translateY(30px)';
+    sec.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+    sec.style.opacity = '1'; // Start visible after load
+    sec.style.transform = 'translateY(0)';
+    revealObserver.observe(sec);
+  });
+
+  // Ensure hero visible immediately
+  document.getElementById('hero').style.opacity = '1';
+  document.getElementById('hero').style.transform = 'translateY(0)';
+
+  console.log('✨ 致胡佳欣：愿你落笔生花，光芒万丈。高考加油！');
+})();
+</script>
+</body>
+</html>

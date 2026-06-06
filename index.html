@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>致即将拥抱阳光的你</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -25,7 +24,7 @@
   }
 
   body {
-    font-family: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'STSong', 'SimSun', serif;
     background: var(--night-deep);
     color: var(--starlight);
     overflow-x: hidden;
@@ -38,22 +37,37 @@
     pointer-events: none; z-index:0;
   }
 
-  /* ── Loading ── */
-  #loading {
-    position: fixed; inset:0; z-index:9999;
+  /* ── Entry Overlay ── */
+  #entry {
+    position: fixed; inset: 0; z-index: 9999;
     background: var(--night-deep);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     transition: opacity 0.8s ease, visibility 0.8s ease;
+    cursor: default;
   }
-  #loading.hidden { opacity:0; visibility:hidden; pointer-events:none; }
-  .loader-ring {
-    width:48px; height:48px; border:2px solid rgba(212,165,116,0.2);
-    border-top-color: var(--gold); border-radius:50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+  #entry.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .entry-content {
+    display: flex; flex-direction: column; align-items: center; gap: 36px;
   }
-  .loader-text { color: var(--gold-light); font-size: 0.9rem; letter-spacing: 0.2em; }
-  @keyframes spin { to { transform:rotate(360deg); } }
+  .entry-intro {
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+    color: var(--gold-light); letter-spacing: 0.12em;
+    opacity: 0.7; margin: 0;
+  }
+  #entry-btn {
+    margin-top: 20px;
+    padding: 14px 56px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.15rem; letter-spacing: 0.2em; color: var(--night-deep);
+    background: linear-gradient(135deg, #d4a574 0%, #e8d5b7 50%, #d4a574 100%);
+    border: none; border-radius: 32px; cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+  }
+  #entry-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 32px rgba(212,165,116,0.35);
+  }
+  #entry-btn:active { transform: scale(0.97); opacity: 0.85; }
 
   /* ── Music Toggle ── */
   #music-toggle {
@@ -80,7 +94,7 @@
     text-align: center;
   }
   .hero-kv {
-    font-family: 'Cormorant Garamond', 'Noto Serif SC', serif;
+    font-family: Georgia, 'Times New Roman', 'Noto Serif SC', 'STSong', 'SimSun', serif;
     font-size: clamp(2.6rem, 6vw, 4.2rem);
     font-weight: 600; letter-spacing: 0.06em;
     background: linear-gradient(180deg, #e8d5b7 0%, #d4a574 40%, #8b6914 100%);
@@ -236,10 +250,12 @@
 </head>
 <body>
 
-<!-- Loading -->
-<div id="loading">
-  <div class="loader-ring"></div>
-  <p class="loader-text">星光正在铺路...</p>
+<!-- Entry Overlay -->
+<div id="entry">
+  <div class="entry-content">
+    <p class="entry-intro">星光已备好，只等你启程</p>
+    <button id="entry-btn">开 始</button>
+  </div>
 </div>
 
 <!-- Music Toggle -->
@@ -344,18 +360,15 @@
 (function() {
   'use strict';
 
-  // ── Loading ──
-  window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1200);
-  });
-
-  // ── Music: auto-play on first interaction ──
+  // ── Entry → Start music + reveal content ──
+  const entry = document.getElementById('entry');
+  const entryBtn = document.getElementById('entry-btn');
   const musicBtn = document.getElementById('music-toggle');
   const musicFrame = document.getElementById('music-frame');
   const bgm = document.getElementById('bgm');
   let musicPlaying = false;
 
-  function tryPlay() {
+  function startMusic() {
     if (musicPlaying) return;
     bgm.play().then(() => {
       musicPlaying = true;
@@ -365,13 +378,9 @@
     }).catch(() => {});
   }
 
-  // Attempt immediately (desktop)
-  bgm.load();
-  tryPlay();
-
-  // On mobile: any user interaction triggers play
-  ['click', 'touchstart', 'scroll'].forEach(evt => {
-    document.addEventListener(evt, tryPlay, { once: true, passive: true });
+  entryBtn.addEventListener('click', () => {
+    startMusic();
+    entry.classList.add('hidden');
   });
 
   // Toggle button: pause / resume
@@ -384,10 +393,20 @@
       musicBtn.textContent = '♫';
       musicFrame.style.display = 'none';
     } else {
-      tryPlay();
+      startMusic();
     }
   });
-    }
+
+  // Sync with audio events
+  bgm.addEventListener('play', () => {
+    musicPlaying = true;
+    musicBtn.classList.add('playing'); musicBtn.textContent = '♪';
+    musicFrame.style.display = 'block';
+  });
+  bgm.addEventListener('pause', () => {
+    musicPlaying = false;
+    musicBtn.classList.remove('playing'); musicBtn.textContent = '♫';
+    musicFrame.style.display = 'none';
   });
 
   // ── Starfield Canvas ──

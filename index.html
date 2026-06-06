@@ -229,11 +229,21 @@
     border-radius: 50% 0 50% 0;
     opacity:0; animation: petalFall linear forwards;
   }
+  .petal.hydrangea {
+    width:8px; height:8px; border-radius:50%;
+    animation: petalFallHydrangea linear forwards;
+  }
   @keyframes petalFall {
     0% { opacity:0; transform: translate(0, -20px) rotate(0deg) scale(0.6); }
     10% { opacity:0.7; }
     80% { opacity:0.3; }
     100% { opacity:0; transform: translate(var(--dx), 100vh) rotate(var(--rot)) scale(1); }
+  }
+  @keyframes petalFallHydrangea {
+    0% { opacity:0; transform: translate(0, -10px) rotate(0deg) scale(0.4); }
+    10% { opacity:0.8; }
+    85% { opacity:0.25; }
+    100% { opacity:0; transform: translate(var(--dx), 100vh) rotate(var(--rot)) scale(0.9); }
   }
 
   /* ── Responsive ── */
@@ -511,8 +521,34 @@
     petal.style.cssText = `
       left:${startX}px; top:-20px;
       width:${size}px; height:${size * 1.4}px;
-      --dx:${(Math.random() - 0.5) * 180}px;
+      --dx:${(Math.random() - 0.5) * 200}px;
       --rot:${Math.random() * 540 - 270}deg;
+      animation-duration:${Math.random() * 5 + 7}s;
+      animation-delay:0s;
+    `;
+    document.body.appendChild(petal);
+    petal.addEventListener('animationend', () => petal.remove());
+  }
+
+  // ── Hydrangea Petals ──
+  const hydrangeaColors = [
+    '#b8cce4', '#c5d5f2', '#d4c8e8',  // blue / lavender
+    '#e8c8d8', '#f0d4e0', '#c8d8e8',  // soft pink / blue
+    '#ddd4e8', '#c8e0d8',              // grey-lavender / mint
+  ];
+  function spawnHydrangea() {
+    const petal = document.createElement('div');
+    petal.className = 'petal hydrangea';
+    const startX = Math.random() * window.innerWidth;
+    const size = Math.random() * 5 + 4;
+    const color = hydrangeaColors[Math.floor(Math.random() * hydrangeaColors.length)];
+    petal.style.cssText = `
+      left:${startX}px; top:-10px;
+      width:${size}px; height:${size}px;
+      background:${color};
+      box-shadow:0 0 ${size}px ${color};
+      --dx:${(Math.random() - 0.5) * 140}px;
+      --rot:${Math.random() * 360 - 180}deg;
       animation-duration:${Math.random() * 6 + 8}s;
       animation-delay:0s;
     `;
@@ -520,14 +556,25 @@
     petal.addEventListener('animationend', () => petal.remove());
   }
 
-  // Spawn petals at intervals, more frequent during dawn section
-  let petalInterval = 4000;
+  // Spawn schedule: rose petals frequent + hydrangea petals gentle
   function schedulePetal() {
-    spawnPetal();
-    petalInterval = 3000 + Math.random() * 5000;
-    setTimeout(schedulePetal, petalInterval);
+    const roseCount = Math.random() < 0.25 ? 2 : 1;
+    for (let i = 0; i < roseCount; i++) {
+      setTimeout(spawnPetal, i * 150);
+    }
+    const interval = 500 + Math.random() * 1200;
+    setTimeout(schedulePetal, interval);
   }
-  setTimeout(schedulePetal, 3000);
+  function scheduleHydrangea() {
+    const count = Math.random() < 0.4 ? 3 : 2;
+    for (let i = 0; i < count; i++) {
+      setTimeout(spawnHydrangea, i * 200);
+    }
+    const interval = 600 + Math.random() * 1200;
+    setTimeout(scheduleHydrangea, interval);
+  }
+  setTimeout(schedulePetal, 600);
+  setTimeout(scheduleHydrangea, 1500);
 
   // ── Scroll-triggered section reveals ──
   const observerOptions = { threshold: 0.3 };
